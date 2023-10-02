@@ -20,9 +20,6 @@ class OAuthToken {
   final String tokenType;
 
   /// Scope of this token:
-  /// - read
-  /// - read write
-  // TODO : anything else?
   final String scope;
 
   /// Expires in seconds.

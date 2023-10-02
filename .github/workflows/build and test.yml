@@ -16,12 +16,15 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Detect changed directories
-        uses: gagle/nx-check-changes@v1.0.0
-        id: nx-changes
-
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            dart_filter:
+              - added|modified: '**/*.dart'
     outputs:
-      changed-dirs: ${{ steps.nx-changes.outputs.changed-dirs }}
-      skip: ${{ steps.nx-changes.outputs.not-affected }}
+      changed-dirs: ${{ steps.filter.outputs.dart_filter_files }}
+      skip: ${{ steps.filter.dart_filter }}
 
   build:
     runs-on: ubuntu-latest
