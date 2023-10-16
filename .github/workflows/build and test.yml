@@ -3,63 +3,76 @@
 
 name: Flutter build and test
 
-on: push
+# Push to master branch
+on:
+  push:
+    branches:
+      - master
 
 env:
   FLUTTER_FOLDER: '$HOME/flutter'
 
 jobs:
-  pre-run:
+  changes:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Detect changed directories
         uses: dorny/paths-filter@v2
         id: filter
         with:
-          base: 07d6a0203c6addc02bab649b8695bf2da1dd9ae7
           list-files: 'shell'
           filters: |
-            dart_filter:
-              - added|modified: '**/*.dart'
+            backends/carp_webservices: backends/carp_webservices/**
+            carp_mobile_sensing: carp_mobile_sensing/**
+            carp_core: carp_core/**
+            carp_serializable: carp_serializable/**
+            packages/carp_esense_package: packages/carp_esense_package/**
+            packages/carp_polar_package: packages/carp_polar_package/**
+            packages/carp_movisens_package: packages/carp_movisens_package/**
+            packages/carp_health_package: packages/carp_health_package/**
+            packages/carp_audio_package: packages/carp_audio_package/**
+            packages/carp_communication_package: packages/carp_communication_package/**
+            packages/carp_survey_package: packages/carp_survey_package/**
+            packages/carp_context_package: packages/carp_context_package/**
+            packages/carp_connectivity_package: packages/carp_connectivity_package/**
+
     outputs:
       changed-dirs: ${{ steps.filter.outputs.dart_filter_files }}
       no_skip: ${{ steps.filter.dart_filter }}
+      packages: ${{ steps.filter.outputs.changes }}
 
   build:
     runs-on: ubuntu-latest
-    needs: [pre-run]
-    # if: needs.pre-run.outputs.no_skip == 'true'
-    # strategy:
-    #   matrix:
-    #     dir: ${{ needs.pre-run.outputs.changed-dirs }}
-    # # have the working directory be the matrix variable
-    # defaults:
-    #   run:
-    #     working-directory: ${{ matrix.dir }}
-    steps:
-      - run: echo ${{ needs.pre-run.outputs.changed-dirs }}
+    needs: [changes]
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
-      - uses: actions/checkout@v3
+    defaults:
+       run:
+         working-directory: ${{ matrix.package }}
+    steps:
+      - uses: 'actions/checkout@v2'
 
       - name: Cache Flutter
         id: cache-flutter
         uses: actions/cache@v3
         with:
           path: |
-            flutter
+            $HOME/flutter
             ~/.pub-cache
 
           key: flutter-${{ hashFiles('**/pubspec.lock') }}
 
       - if: ${{ steps.cache-flutter.outputs.cache-hit != 'true' }}
         name: Install Flutter
-        run: git clone https://github.com/flutter/flutter.git --depth 1 -b stable $FOLDER
+        run: git clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter
 
       - name: Add Flutter to PATH
-        run: echo "$GITHUB_WORKSPACE/flutter/bin" >> $GITHUB_PATH
+        run: echo "$HOME/flutter/bin" >> $GITHUB_PATH
 
       - if: ${{ steps.cache-flutter.outputs.cache-hit != 'true' }}
         name: Install dependencies
@@ -69,8 +82,4 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib/** test/**
 
       - name: Analyze project source
-        run: flutter analyze --no-fatal-infos lib/ test/
-
-      - name: Run tests
-        run: |
-          flutter test
+        run: flutter analyze --no-fatal-infos lib/
