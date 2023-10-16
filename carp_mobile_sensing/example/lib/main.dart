@@ -179,7 +179,7 @@ class LocalStudyProtocolManager implements StudyProtocolManager {
 
     // Add background measures from the [DeviceSamplingPackage] and
     // [SensorSamplingPackage] sampling packages.
-    //
+
     // Note that some of these measures only works on Android:
     //  * screen events
     //  * ambient light
@@ -196,15 +196,32 @@ class LocalStudyProtocolManager implements StudyProtocolManager {
       phone,
     );
 
+    // // Collect IMU data every 10 secs for 1 sec.
+    // protocol.addTaskControl(
+    //   PeriodicTrigger(period: const Duration(seconds: 10)),
+    //   BackgroundTask(
+    //     measures: [
+    //       Measure(type: SensorSamplingPackage.ACCELERATION),
+    //       Measure(type: SensorSamplingPackage.ROTATION),
+    //     ],
+    //     duration: const IsoDuration(seconds: 1),
+    //   ),
+    //   phone,
+    // );
+
     // Collect IMU data every 10 secs for 1 sec.
     protocol.addTaskControl(
-      PeriodicTrigger(period: const Duration(seconds: 10)),
+      ImmediateTrigger(),
       BackgroundTask(
         measures: [
-          Measure(type: CarpDataTypes.ACCELERATION_TYPE_NAME),
-          Measure(type: CarpDataTypes.ROTATION_TYPE_NAME),
+          Measure(
+              type:
+                  SensorSamplingPackage.AVERAGE_NON_GRAVITATIONAL_ACCELERATION)
+            ..overrideSamplingConfiguration = PeriodicSamplingConfiguration(
+              interval: const Duration(minutes: 1),
+              duration: const Duration(seconds: 2),
+            ),
         ],
-        duration: const IsoDuration(seconds: 1),
       ),
       phone,
     );
@@ -283,16 +300,16 @@ class LocalStudyProtocolManager implements StudyProtocolManager {
     // the App Task model.
 
     // Add a task 1 minute after deployment and make a notification.
-    protocol.addTaskControl(
-      ElapsedTimeTrigger(elapsedTime: const IsoDuration(seconds: 30)),
-      AppTask(
-        type: BackgroundSensingUserTask.ONE_TIME_SENSING_TYPE,
-        title: "Elapsed Time - App Task",
-        measures: [Measure(type: DeviceSamplingPackage.DEVICE_INFORMATION)],
-        notification: true,
-      ),
-      phone,
-    );
+    // protocol.addTaskControl(
+    //   ElapsedTimeTrigger(elapsedTime: const IsoDuration(seconds: 30)),
+    //   AppTask(
+    //     type: BackgroundSensingUserTask.ONE_TIME_SENSING_TYPE,
+    //     title: "Elapsed Time - App Task",
+    //     measures: [Measure(type: DeviceSamplingPackage.DEVICE_INFORMATION)],
+    //     notification: true,
+    //   ),
+    //   phone,
+    // );
 
     // // Add a cron job every day at 11:45
     // protocol.addTaskControl(
