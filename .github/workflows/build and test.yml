@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
+      - develop-1.1.0
 
 env:
   FLUTTER_FOLDER: '$HOME/flutter'
