@@ -81,6 +81,7 @@ abstract class AbstractCommand implements Command {
         uri: uri.replace(pathSegments: ['dev']),
         authURL: uri,
         clientId: clientId,
+        clientSecret: clientSecret,
         redirectURI: Uri.parse('carp-studies-auth://auth'),
         discoveryURL: uri.replace(pathSegments: [
           ...uri.pathSegments,
